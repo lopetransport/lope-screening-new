@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "1.0",
+  "applicant": {
+    "fullName": "Demo Hauler",
+    "idOrPassportNumber": "DEMO12345",
+    "registrationType": "individual",
+    "business": null
+  },
+  "contact": {
+    "mobileNumber": "+27821234567",
+    "email": "demo@example.com",
+    "physicalAddress": "Demo address",
+    "province": "Gauteng"
+  },
+  "trucks": [
+    {
+      "vehicleType": "Truck (Rigid)",
+      "horseRegistration": "DEMO GP",
+      "trailer1Registration": "",
+      "trailer2Registration": "",
+      "loadCapacityTons": 5
+    }
+  ],
+  "banking": {
+    "bankName": "ABSA Bank",
+    "accountHolderName": "Demo Hauler",
+    "accountNumber": "00000000",
+    "accountType": "Current Account",
+    "branchCode": "000000"
+  },
+  "documents": [
+    {
+      "id": "demo-document",
+      "type": "Other Supporting Document",
+      "fileName": "demo.pdf",
+      "mimeType": "application/pdf",
+      "sizeBytes": 100,
+      "multipartField": "document_demo-document"
+    }
+  ],
+  "consents": {
+    "termsAccepted": true,
+    "dataProcessing": true,
+    "contact": true,
+    "termsVersion": "1.0",
+    "privacyVersion": "1.0"
+  },
+  "clientSubmittedAt": "2026-10-14T16:00:00.000Z"
+}

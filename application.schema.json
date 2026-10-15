@@ -1,0 +1,375 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0"
+    },
+    "applicant": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "fullName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "idOrPassportNumber": {
+          "type": "string",
+          "minLength": 5,
+          "maxLength": 30
+        },
+        "registrationType": {
+          "type": "string",
+          "enum": [
+            "individual",
+            "business"
+          ]
+        },
+        "business": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "beeeLevel": {
+                  "type": "string",
+                  "minLength": 1,
+                  "enum": [
+                    "Level 1 (135% B-BBEE recognition)",
+                    "Level 2 (125% B-BBEE recognition)",
+                    "Level 3 (110% B-BBEE recognition)",
+                    "Level 4 (100% B-BBEE recognition)",
+                    "Level 5 (80% B-BBEE recognition)",
+                    "Level 6 (60% B-BBEE recognition)",
+                    "Level 7 (50% B-BBEE recognition)",
+                    "Level 8 (10% B-BBEE recognition)",
+                    "Non-compliant (0% B-BBEE recognition)"
+                  ]
+                },
+                "cipcRegistrationNumber": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "name",
+                "beeeLevel",
+                "cipcRegistrationNumber"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "fullName",
+        "idOrPassportNumber",
+        "registrationType",
+        "business"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "registrationType": {
+                "const": "business"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "business": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "beeeLevel": {
+                    "type": "string",
+                    "minLength": 1,
+                    "enum": [
+                      "Level 1 (135% B-BBEE recognition)",
+                      "Level 2 (125% B-BBEE recognition)",
+                      "Level 3 (110% B-BBEE recognition)",
+                      "Level 4 (100% B-BBEE recognition)",
+                      "Level 5 (80% B-BBEE recognition)",
+                      "Level 6 (60% B-BBEE recognition)",
+                      "Level 7 (50% B-BBEE recognition)",
+                      "Level 8 (10% B-BBEE recognition)",
+                      "Non-compliant (0% B-BBEE recognition)"
+                    ]
+                  },
+                  "cipcRegistrationNumber": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "name",
+                  "beeeLevel",
+                  "cipcRegistrationNumber"
+                ]
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "business": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "contact": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "mobileNumber": {
+          "type": "string",
+          "pattern": "^\\+27[6-8]\\d{8}$"
+        },
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "physicalAddress": {
+          "type": "string",
+          "minLength": 1
+        },
+        "province": {
+          "type": "string",
+          "enum": [
+            "Eastern Cape",
+            "Free State",
+            "Gauteng",
+            "KwaZulu-Natal",
+            "Limpopo",
+            "Mpumalanga",
+            "Northern Cape",
+            "North West",
+            "Western Cape"
+          ]
+        }
+      },
+      "required": [
+        "mobileNumber",
+        "email",
+        "physicalAddress",
+        "province"
+      ]
+    },
+    "trucks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "vehicleType": {
+            "type": "string",
+            "enum": [
+              "Bakkie/Light Delivery Vehicle",
+              "Panel Van",
+              "Truck (Rigid)",
+              "Truck (Articulated)",
+              "Flatbed Truck",
+              "Refrigerated Truck",
+              "Tipper Truck",
+              "Other"
+            ]
+          },
+          "loadCapacityTons": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 15
+          },
+          "horseRegistration": {
+            "type": "string",
+            "minLength": 1
+          },
+          "trailer1Registration": {
+            "type": "string"
+          },
+          "trailer2Registration": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "vehicleType",
+          "loadCapacityTons",
+          "horseRegistration",
+          "trailer1Registration",
+          "trailer2Registration"
+        ]
+      }
+    },
+    "banking": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "bankName": {
+          "type": "string",
+          "minLength": 1,
+          "enum": [
+            "ABSA Bank",
+            "Standard Bank",
+            "First National Bank (FNB)",
+            "Nedbank",
+            "Capitec Bank",
+            "African Bank",
+            "Investec Bank",
+            "Discovery Bank",
+            "TymeBank",
+            "Bank Zero",
+            "Bidvest Bank",
+            "Sasfin Bank",
+            "Other"
+          ]
+        },
+        "accountHolderName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "accountNumber": {
+          "type": "string",
+          "pattern": "^\\d{8,13}$"
+        },
+        "accountType": {
+          "type": "string",
+          "enum": [
+            "Current Account",
+            "Savings Account",
+            "Business Current Account",
+            "Business Savings Account"
+          ]
+        },
+        "branchCode": {
+          "type": "string",
+          "pattern": "^\\d{6}$"
+        }
+      },
+      "required": [
+        "bankName",
+        "accountHolderName",
+        "accountNumber",
+        "accountType",
+        "branchCode"
+      ]
+    },
+    "documents": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "Vehicle Registration Certificate",
+              "Driver's License",
+              "Vehicle Insurance Certificate",
+              "Roadworthy Certificate",
+              "Bank Statement",
+              "Bank Account Confirmation Letter",
+              "ID Document / Passport",
+              "Business Registration (CIPC)",
+              "Tax Clearance Certificate",
+              "Other Supporting Document"
+            ]
+          },
+          "fileName": {
+            "type": "string",
+            "minLength": 1
+          },
+          "mimeType": {
+            "type": "string",
+            "enum": [
+              "application/pdf",
+              "image/jpeg",
+              "image/png",
+              "image/webp"
+            ]
+          },
+          "sizeBytes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10485760
+          },
+          "multipartField": {
+            "type": "string",
+            "pattern": "^document_.+"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "fileName",
+          "mimeType",
+          "sizeBytes",
+          "multipartField"
+        ]
+      }
+    },
+    "consents": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "termsAccepted": {
+          "const": true
+        },
+        "dataProcessing": {
+          "const": true
+        },
+        "contact": {
+          "const": true
+        },
+        "termsVersion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "privacyVersion": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "termsAccepted",
+        "dataProcessing",
+        "contact",
+        "termsVersion",
+        "privacyVersion"
+      ]
+    },
+    "clientSubmittedAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "applicant",
+    "contact",
+    "trucks",
+    "banking",
+    "documents",
+    "consents",
+    "clientSubmittedAt"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Lope hauler application"
+}
