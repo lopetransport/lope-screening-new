@@ -4,7 +4,7 @@ React, TypeScript, Tailwind and Vite front end plus a Vercel Node server endpoin
 
 ## Deploy
 
-See DEPLOY-VERCEL.md. Upload the entire source tree, including `api/`, `src/` and `public/`, along with package.json, package-lock.json, vite.config.ts, tsconfig.json, index.html and vercel.json. The logo and copyright layout are preserved.
+See DEPLOY-VERCEL.md. Upload the entire source tree, including `api/`, `server/`, `src/` and `public/`, along with package.json, package-lock.json, vite.config.ts, tsconfig.json, index.html and vercel.json. The logo and copyright layout are preserved.
 
 Configure Vercel environment variables:
 
@@ -16,7 +16,7 @@ Redeploy after configuration. Revoke the token shared in chat and use its replac
 
 ## Submission
 
-The actual form handler lives in src/App.tsx; main.tsx mounts the app. The browser POSTs JSON to `/api/hubspot-contact`. That function POSTs `{ properties: { email, firstname, lastname, phone, company } }` to `https://api.hubapi.com/crm/v3/objects/contacts` with the server-side Bearer token and application/json header. First name is the first word of Full Name, surname is the remaining words, and company is blank for individual registrations. Phone is normalized to +27.
+The actual form handler lives in src/App.tsx; main.tsx mounts the app. The browser POSTs JSON to `/api/submit`. That function POSTs `{ properties: { email, firstname, lastname, phone, company } }` to `https://api.hubapi.com/crm/v3/objects/contacts` with the server-side Bearer token and application/json header. First name is the first word of Full Name, surname is the remaining words, and company is blank for individual registrations. Phone is normalized to +27.
 
 HTTP 200/201 with a contact ID opens the success step. The reference is the HubSpot contact ID. Duplicate email, rate limits, rejected requests, missing configuration, timeouts and network failures show safe messages and preserve the form for correction/retry. Duplicate contacts are not overwritten. No real HubSpot call was made during verification.
 
