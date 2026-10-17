@@ -57,3 +57,7 @@ The original implementation/framework/API endpoint cannot be identified conclusi
 ## Recovery gaps
 
 Approved expanded terms/privacy copy, original server API, storage provider, notification behavior, duplicate-application handling and original receipt screen remain unavailable. Configure the actual policy text and endpoint before accepting real applications. Required consent labels/descriptions are reproduced; expanded policy text is explicitly marked as unrecovered. This is a tested front-end implementation, not a claim that backend identity, payment or document verification has been recovered.
+
+## Current HubSpot integration (17 October 2026)
+
+The generic multipart/preview submission described above has been replaced by a contact-only Vercel API integration. See README.md for current behavior. Other form fields and files remain local; only name/email/phone/company are transmitted.

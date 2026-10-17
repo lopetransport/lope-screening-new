@@ -27,3 +27,7 @@ Added a shared header with /logo.png and exact alt text, plus the requested copy
 ## Logo asset completed
 
 Bundled the supplied signature logo in public/logo.png. PNG signature checked; production build passed and dist/logo.png matches the original asset byte for byte.
+
+## HubSpot integration
+
+All 11 tests passed, including mocked HubSpot success and failure cases. Build passed. Credentials were not persisted, no real applicant was transmitted, and no live HubSpot contact was created.
