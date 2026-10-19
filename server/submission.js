@@ -32,7 +32,8 @@ export function createSubmissionHandler({
         503,
         "Application submission is not configured. Please try again later.",
       );
-    if (!env.BLOB_READ_WRITE_TOKEN)
+    const blobToken = env.BLOB_READ_WRITE_TOKEN?.trim();
+    if (!blobToken)
       return fail(
         503,
         "Document storage is not connected yet. Please contact Lope or try again later.",
@@ -89,7 +90,7 @@ export function createSubmissionHandler({
               const i = start + offset;
               const doc = body.application.documents[i];
               const actual = await inspectBlob(doc.url, {
-                token: env.BLOB_READ_WRITE_TOKEN,
+              token: blobToken,
               });
               const expectedPrefix = `applications/${session.id}/${doc.id}-`;
               if (

@@ -43,3 +43,7 @@ All 18 tests passed, including full payload capture, field-to-email coverage, do
 ## Upload token route correction
 
 Explicitly passes the trimmed BLOB_READ_WRITE_TOKEN to handleUpload, validates server configuration and signed upload sessions, removes the unnecessary callback dependency, and returns actionable JSON errors. Browser requests the scoped token explicitly before using the SDK client put for a direct Blob upload, so JSON/HTML failures are visible and expired sessions can be retried. All 24 tests passed, including real SDK token generation using a synthetic read-write token without network calls. Production build passed. Live Blob credentials and the deployed Vercel environment have not been inspected or tested.
+
+## Remove application-defined credential format rejection
+
+Removed the custom credential prefix/store-ID character regex that emitted BLOB_TOKEN_INVALID before invoking the SDK. Configured credentials are trimmed and delegated directly to the SDK; SDK credential failures are separately classified without exposing secrets. The same trimmed value is used for Blob metadata verification. All 27 tests passed, including real SDK token generation outside our previous character assumptions, SDK-only credential rejection and unchanged upload authorization. Production build passed. No live Vercel credential was inspected.

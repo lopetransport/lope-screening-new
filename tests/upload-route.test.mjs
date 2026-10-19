@@ -28,13 +28,34 @@ test('real SDK returns a scoped client token from the explicit read-write token 
  assert.equal(payload.onUploadCompleted,undefined);
  assert.ok(!JSON.stringify(res.data).includes(env.BLOB_READ_WRITE_TOKEN));
 });
-test('missing and malformed server tokens produce specific safe configuration errors',async()=>{
- for (const [token,code] of [[undefined,'BLOB_TOKEN_MISSING'],['wrong-token','BLOB_TOKEN_INVALID']]) {
- const {res,logs}=await run(event(),{env:{...env,BLOB_READ_WRITE_TOKEN:token}});
- assert.equal(res.code,503);assert.equal(res.data.code,code);assert.ok(res.data.message.includes('Blob') || res.data.message.includes('BLOB'));
- assert.ok(!JSON.stringify(logs).includes('wrong-token'));
+test('missing server token is reported without invoking the SDK',async()=>{
+ const {res}=await run(event(),{env:{...env,BLOB_READ_WRITE_TOKEN:'   '},sdkHandleUpload:async()=>assert.fail('No credential was configured')});
+ assert.equal(res.code,503);assert.equal(res.data.code,'BLOB_TOKEN_MISSING');
+});
+
+test('configured credential is forwarded to the SDK without application format assumptions',async()=>{
+ for(const credential of ['provider-managed-token-format','vercel_blob_rw_store.with.dots_test-secret']) {
+ let called=false;
+ const {res}=await run(event(),{env:{...env,BLOB_READ_WRITE_TOKEN:`  ${credential}  `},sdkHandleUpload:async options=>{
+ called=true;assert.equal(options.token,credential);
+ return {type:'blob.generate-client-token',clientToken:'vercel_blob_client_scoped'};
+ }});
+ assert.equal(res.code,200);assert.equal(called,true);
  }
 });
+
+test('SDK-accepted credential is not rejected by our old store-ID character regex',async()=>{
+ const {res}=await run(event(),{env:{...env,BLOB_READ_WRITE_TOKEN:'vercel_blob_rw_store.with.dots_test-secret'}});
+ assert.equal(res.code,200);
+ assert.equal(getPayloadFromClientToken(res.data.clientToken).maximumSizeInBytes,100);
+});
+
+test('actual SDK credential rejection is distinct from an application format check and never exposes credentials',async()=>{
+ const {res,logs}=await run(event(),{env:{...env,BLOB_READ_WRITE_TOKEN:'invalid-secret'}});
+ assert.equal(res.code,503);assert.equal(res.data.code,'BLOB_SDK_CREDENTIAL_REJECTED');
+ assert.ok(!JSON.stringify(res.data).includes('invalid-secret'));assert.ok(!JSON.stringify(logs).includes('invalid-secret'));
+});
+
 test('validates session before calling the SDK',async()=>{
  const body=event();body.payload.clientPayload=JSON.stringify({token:'forged',documentId});
  const {res}=await run(body,{sdkHandleUpload:async()=>assert.fail('SDK must not be called')});

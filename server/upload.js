@@ -26,7 +26,8 @@ export function createUploadHandler({ env = process.env, sdkHandleUpload = handl
     };
     const token = env.BLOB_READ_WRITE_TOKEN?.trim();
     if (!token) return fail(503, 'BLOB_TOKEN_MISSING', 'Document storage is not configured: connect a Public Blob store and set BLOB_READ_WRITE_TOKEN for this Vercel environment, then redeploy.');
-    if (!/^vercel_blob_rw_[A-Za-z0-9-]+_[^\s"']+$/.test(token)) return fail(503, 'BLOB_TOKEN_INVALID', 'The server BLOB_READ_WRITE_TOKEN is not a valid read-write token. Check the connected Blob store and redeploy.');
+    // Credential formats belong to the SDK. Do not reject configured credentials
+    // with an application-specific prefix/character regex.
     if (!signingSecret(env)) return fail(503, 'SIGNING_SECRET_MISSING', 'Upload authorization is not configured. Check the server signing secret or HubSpot token.');
     try {
       const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
@@ -47,7 +48,9 @@ export function createUploadHandler({ env = process.env, sdkHandleUpload = handl
       });
       if (body.type === 'blob.generate-client-token' && (typeof result?.clientToken !== 'string' || !result.clientToken.startsWith('vercel_blob_client_'))) return fail(502, 'BLOB_TOKEN_RESPONSE_INVALID', 'The upload service did not return an upload token. Please retry.');
       return res.status(200).json(result);
-    } catch {
+    } catch (error) {
+      const sdkRejectedCredential = ['Invalid `token` parameter', 'Invalid `BLOB_READ_WRITE_TOKEN`'].some(message => typeof error?.message === 'string' && error.message.endsWith(message));
+      if (sdkRejectedCredential) return fail(503, 'BLOB_SDK_CREDENTIAL_REJECTED', 'The Blob SDK could not use the configured storage credential. Please contact Lope support with error code BLOB_SDK_CREDENTIAL_REJECTED.');
       return fail(502, 'BLOB_TOKEN_GENERATION_FAILED', 'The document upload service could not authorize this upload. Check the connected Public Blob store and server token, then retry.');
     }
   };
