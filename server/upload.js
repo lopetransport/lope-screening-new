@@ -17,32 +17,39 @@ export function authorizeUpload(pathname, clientPayload, env = process.env) {
   };
 }
 
-export default async function handler(req, res) {
-  if (!guard(req, res)) return;
-  if (!process.env.BLOB_READ_WRITE_TOKEN || !signingSecret(process.env))
-    return res
-      .status(503)
-      .json({ message: "Document storage is not connected yet." });
-  try {
-    const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
-    const result = await handleUpload({
-      body,
-      request: req,
-      onBeforeGenerateToken: async (pathname, clientPayload) => {
-        return authorizeUpload(pathname, clientPayload);
-      },
-      onUploadCompleted: async () => {
-        /* Final submission independently verifies each blob. */
-      },
-    });
-    return res.status(200).json(result);
-  } catch {
-    console.error("Document upload authorization failed");
-    return res
-      .status(400)
-      .json({
-        message:
-          "Document upload could not start. Retry the application submission.",
+export function createUploadHandler({ env = process.env, sdkHandleUpload = handleUpload, logger = console } = {}) {
+  return async function handler(req, res) {
+    if (!guard(req, res)) return;
+    const fail = (status, code, message) => {
+      logger.error('Document upload failed', { code });
+      return res.status(status).json({ success: false, code, message });
+    };
+    const token = env.BLOB_READ_WRITE_TOKEN?.trim();
+    if (!token) return fail(503, 'BLOB_TOKEN_MISSING', 'Document storage is not configured: connect a Public Blob store and set BLOB_READ_WRITE_TOKEN for this Vercel environment, then redeploy.');
+    if (!/^vercel_blob_rw_[A-Za-z0-9-]+_[^\s"']+$/.test(token)) return fail(503, 'BLOB_TOKEN_INVALID', 'The server BLOB_READ_WRITE_TOKEN is not a valid read-write token. Check the connected Blob store and redeploy.');
+    if (!signingSecret(env)) return fail(503, 'SIGNING_SECRET_MISSING', 'Upload authorization is not configured. Check the server signing secret or HubSpot token.');
+    try {
+      const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
+      if (!body || !['blob.generate-client-token', 'blob.upload-completed'].includes(body.type)) return fail(400, 'INVALID_UPLOAD_EVENT', 'Invalid document upload request.');
+      let authorization;
+      if (body.type === 'blob.generate-client-token') {
+        try { authorization = authorizeUpload(body.payload?.pathname, body.payload?.clientPayload, env); }
+        catch (error) { return fail(400, 'UPLOAD_SESSION_INVALID', 'Your document upload session expired or is invalid. Please submit again to start a new session.'); }
+      }
+      const result = await sdkHandleUpload({
+        token,
+        body,
+        request: req,
+        onBeforeGenerateToken: async (pathname, clientPayload) => {
+          return authorization || authorizeUpload(pathname, clientPayload, env);
+        },
+        // Finalization checks Blob metadata itself. No callback URL is needed.
       });
-  }
+      if (body.type === 'blob.generate-client-token' && (typeof result?.clientToken !== 'string' || !result.clientToken.startsWith('vercel_blob_client_'))) return fail(502, 'BLOB_TOKEN_RESPONSE_INVALID', 'The upload service did not return an upload token. Please retry.');
+      return res.status(200).json(result);
+    } catch {
+      return fail(502, 'BLOB_TOKEN_GENERATION_FAILED', 'The document upload service could not authorize this upload. Check the connected Public Blob store and server token, then retry.');
+    }
+  };
 }
+export default createUploadHandler();

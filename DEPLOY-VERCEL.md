@@ -17,3 +17,11 @@ The only required new resource is a connected Public Vercel Blob store. Resend r
 api/submit.ts, api/upload.ts; server/application.js, server/submission.js, server/upload.js, server/crm.js, server/email.js; application.schema.json; src/ and public/logo.png; package.json and package-lock.json; tsconfig.json, vite.config.ts and vercel.json. Do not upload node_modules or real .env files.
 
 Official references: https://vercel.com/docs/vercel-blob/client-upload, https://resend.com/docs/api-reference/emails/send-email, https://resend.com/docs/dashboard/emails/idempotency-keys, https://developers.hubspot.com/docs/api-reference/legacy/crm/objects/contacts/guide.
+
+## Troubleshoot client token retrieval
+
+The upload route passes BLOB_READ_WRITE_TOKEN explicitly to handleUpload. It must be a long-lived read-write token from the connected Public Blob store, not a store ID, OIDC token, or a VITE_ variable. Confirm it exists for the exact environment (Production or Preview), contains no surrounding quotes, and redeploy after correcting it. Do not send credentials in chat. The browser requests a scoped client token from /api/upload and uses the SDK client put method to upload the file directly to Blob. It never receives the server token.
+
+The route returns specific codes for BLOB_TOKEN_MISSING, BLOB_TOKEN_INVALID, UPLOAD_SESSION_INVALID and BLOB_TOKEN_GENERATION_FAILED. The browser displays the associated message. A 200 HTML response instead of JSON indicates that /api/upload is being rewritten to the application or the wrong Vercel project is deployed. The API remains excluded from the SPA rewrite in vercel.json. A session error clears the cached session so retry creates a new one.
+
+There is no upload-completion callback dependency: finalization checks every Blob independently. Server-side file proxying is deliberately not used because the form permits 10 MB files, which exceed Vercel Functions request-size limits; a server-side put would still require valid Blob credentials.

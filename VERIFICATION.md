@@ -39,3 +39,7 @@ Changed frontend submission to /api/submit; api/submit.ts delegates to server/hu
 ## Complete application workflow — 19 October 2026
 
 All 18 tests passed, including full payload capture, field-to-email coverage, document upload authorization/verification, HTML escaping, existing HubSpot contact updates, linked CRM notes, Resend target/idempotency, missing-key/provider-error fallback, and client upload resume. TypeScript and production builds passed. A separate build with synthetic policy text exercised and included the active submission/upload code; the test copy is in work/, not the deployment archive. Header/logo/footer checked unchanged. No live email, HubSpot write or Blob upload was performed. Requires a connected Public Vercel Blob store. Actual emails require a Resend key and verified sender; absent email configuration preserves the full application as a HubSpot note with a truthful receipt.
+
+## Upload token route correction
+
+Explicitly passes the trimmed BLOB_READ_WRITE_TOKEN to handleUpload, validates server configuration and signed upload sessions, removes the unnecessary callback dependency, and returns actionable JSON errors. Browser requests the scoped token explicitly before using the SDK client put for a direct Blob upload, so JSON/HTML failures are visible and expired sessions can be retried. All 24 tests passed, including real SDK token generation using a synthetic read-write token without network calls. Production build passed. Live Blob credentials and the deployed Vercel environment have not been inspected or tested.
