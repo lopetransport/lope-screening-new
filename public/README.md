@@ -1,0 +1,1 @@
+logo.png is the original Lope signature logo, downloaded from https://github.com/lopetransport/Signature-Logo-Link/blob/main/Untitled%20design%20(3).png . Vite serves this bundled asset at /logo.png.

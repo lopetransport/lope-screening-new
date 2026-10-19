@@ -61,3 +61,7 @@ Approved expanded terms/privacy copy, original server API, storage provider, not
 ## Current HubSpot integration (17 October 2026)
 
 The generic multipart/preview submission described above has been replaced by a contact-only Vercel API integration. See README.md for current behavior. Other form fields and files remain local; only name/email/phone/company are transmitted.
+
+## Full application workflow — 19 October 2026
+
+The contact-only integration has been replaced by complete application submission: direct Vercel Blob uploads, all fields and document URLs stored in a HubSpot contact note, and optional Resend delivery to ops@lopetransport.co.za. Missing email configuration does not lose the CRM application; the receipt reports the email status separately. See README.md and DEPLOY-VERCEL.md for current behavior and required Blob setup.

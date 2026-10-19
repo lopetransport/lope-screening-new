@@ -31,3 +31,11 @@ Bundled the supplied signature logo in public/logo.png. PNG signature checked; p
 ## HubSpot integration
 
 All 11 tests passed, including mocked HubSpot success and failure cases. Build passed. Credentials were not persisted, no real applicant was transmitted, and no live HubSpot contact was created.
+
+## Main branch submission fix
+
+Changed frontend submission to /api/submit; api/submit.ts delegates to server/hubspot.js using HUBSPOT_ACCESS_TOKEN. Success returns HTTP 200 with success: true and applicationId. Added sanitized error logging. All 13 tests and the production build passed. Restored source, endpoint, logo and tests directly to lopetransport/lope-screening-new main in commit 087547246ebf771eccadf2835678fef0be516921. Live HubSpot submission was not performed.
+
+## Complete application workflow — 19 October 2026
+
+All 18 tests passed, including full payload capture, field-to-email coverage, document upload authorization/verification, HTML escaping, existing HubSpot contact updates, linked CRM notes, Resend target/idempotency, missing-key/provider-error fallback, and client upload resume. TypeScript and production builds passed. A separate build with synthetic policy text exercised and included the active submission/upload code; the test copy is in work/, not the deployment archive. Header/logo/footer checked unchanged. No live email, HubSpot write or Blob upload was performed. Requires a connected Public Vercel Blob store. Actual emails require a Resend key and verified sender; absent email configuration preserves the full application as a HubSpot note with a truthful receipt.

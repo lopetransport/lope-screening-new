@@ -1,16 +1,19 @@
-# Vercel deployment: HubSpot integration
+# Deploy the full application workflow
 
-1. Extract the updated ZIP and upload its contents to your GitHub repository, preserving the api/, server/, src/, public/ and tests/ folders. Include package.json, package-lock.json, vite.config.ts, tsconfig.json, index.html and vercel.json.
-2. Import the repository into Vercel. Set Root Directory to the directory containing package.json. Framework: Vite; Node: 22.x; build: npm run vercel-build; output: dist. vercel.json supplies those build settings and excludes /api paths from the SPA rewrite.
-3. In Project Settings -> Environment Variables, add HUBSPOT_ACCESS_TOKEN using a replacement private app token. It must have crm.objects.contacts.write access. This variable is server-only: do not prefix it with VITE_.
-4. Add VITE_TERMS_TEXT and VITE_PRIVACY_TEXT containing approved policy text. The UI blocks submission until both are supplied. These two values are public and embedded during the build.
-5. Apply the variables to Production and any Preview environment you intend to test, then deploy/redeploy.
-6. Submit a deliberate test sign-up using an email you control, check the success reference, then check the contact in HubSpot. This creates a real CRM contact. No live CRM contact was created during development.
+1. Deploy main from lopetransport/lope-screening-new in Vercel. Root Directory is the folder with package.json; framework Vite; Node 22.x; build npm run vercel-build; output dist. vercel.json keeps /api routes out of the SPA rewrite.
+2. In the Vercel project's Storage tab, connect a **Public Vercel Blob** store. Select Production and any Preview environments you intend to use. This provides BLOB_READ_WRITE_TOKEN. No Amazon S3 setup is needed. The token remains server-only. Public access is deliberate because the requested email contains directly accessible file links.
+3. Retain HUBSPOT_ACCESS_TOKEN. The private app needs contact create/update and associated-note creation permissions. The full application is saved in the contact's activity timeline as a note, including every document URL. Do not set this token as VITE_...
+4. To enable email, create a Resend API key and set RESEND_API_KEY in Vercel. Verify lopetransport.co.za in Resend, or set APPLICATION_FROM_EMAIL to a sender on another verified domain. Default sender is Lope Transport Services <ops@lopetransport.co.za>. The recipient is fixed in backend code to ops@lopetransport.co.za and cannot be changed by browser input.
+5. If RESEND_API_KEY is absent, leave it unset. Applications still save to HubSpot, server logs record the reference/status only, and the final receipt explicitly says that email could not be sent. A configured provider that fails also preserves the CRM copy. There is no background retry queue; review the CRM notes until email is enabled.
+6. Set VITE_TERMS_TEXT and VITE_PRIVACY_TEXT to approved policy text covering the complete data transfer, public document links, CRM storage and operations email. Optionally set APPLICATION_SIGNING_SECRET to a long independent random value. Without it, the HubSpot token signs application sessions. Redeploy after setting variables.
+7. Run a deliberate test with synthetic information and an email address you control. Confirm the receipt, HubSpot contact and associated full application note, and (when configured) email receipt in the operations mailbox. Open each linked file and check names/categories, banking fields, entity fields and every truck. Do not assume the build alone verifies provider credentials or delivery.
 
-The app sends only name, email, phone and company. It does not save uploaded files or other application fields. See README.md for scope, mapping and error handling.
+Missing Blob storage produces an actionable error before file upload instead of broken document links. Local File/blob URLs and base64/data URLs are not sent as document links: they are not durable, and large base64 payloads exceed Vercel's body limits and email/CRM note constraints.
 
-If the form shows 'not configured', check the server-only token and redeploy. If it says submission is unavailable until policies are configured, set the public policy variables and rebuild. If /api/submit returns HTML or 404, confirm the api folder and updated vercel.json were uploaded; deploy the source project rather than only dist/. For a duplicate-email message, check the existing CRM record rather than repeatedly submitting. Vercel logs should not contain tokens or applicant payloads.
+The only required new resource is a connected Public Vercel Blob store. Resend remains optional until you configure it. All credentials stay in Vercel environment variables. Client code calls only relative /api/submit and /api/upload routes for application/token exchange; file bytes go directly to Vercel Blob using short-lived scoped upload tokens.
 
-The earlier VITE_APPLICATION_ENDPOINT variable is no longer used. This version always uses the same-origin Vercel function.
+## Files to preserve
 
-References: https://developers.hubspot.com/docs/api-reference/legacy/crm/objects/contacts/create-contact and https://vercel.com/docs/functions
+api/submit.ts, api/upload.ts; server/application.js, server/submission.js, server/upload.js, server/crm.js, server/email.js; application.schema.json; src/ and public/logo.png; package.json and package-lock.json; tsconfig.json, vite.config.ts and vercel.json. Do not upload node_modules or real .env files.
+
+Official references: https://vercel.com/docs/vercel-blob/client-upload, https://resend.com/docs/api-reference/emails/send-email, https://resend.com/docs/dashboard/emails/idempotency-keys, https://developers.hubspot.com/docs/api-reference/legacy/crm/objects/contacts/guide.
